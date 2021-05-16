@@ -7,7 +7,7 @@ pub struct Settings {
 #[derive(serde::Deserialize)]
 pub struct Server {
   pub host: String,
-  pub port: u16
+  pub port: u16,
 }
 
 #[derive(serde::Deserialize)]
@@ -26,4 +26,13 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
   // that `config` knows how to parse: yaml, json, etc.
   settings.merge(config::File::with_name("config"))?;
   settings.try_into()
+}
+
+impl DatabaseSettings {
+  pub fn connection_string(&self) -> String {
+    format!(
+      "postgres://{}:{}@{}:{}/{}",
+      self.username, self.password, self.host, self.port, self.database_name
+    )
+  }
 }

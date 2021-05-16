@@ -12,9 +12,15 @@ path = "src/main.rs"
 name = "zero2prod"
 
 [dependencies]
-actix-web = "4.0.0-beta.3"
-config = "0.11.0"
+actix-http = "=3.0.0-beta.5"
+actix-service = "=2.0.0-beta.5"
+actix-web = "=4.0.0-beta.5"
+
 serde = "1.0.126"
+config = "0.11.0"
+
+uuid = { version = "0.8.1", features = ["v4"] }
+chrono = "0.4.15"
 
 [dev-dependencies]
 actix-rt = "2.2.0"
