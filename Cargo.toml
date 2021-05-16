@@ -19,3 +19,15 @@ serde = "1.0.126"
 actix-rt = "2.2.0"
 reqwest = "0.11.3"
 tokio = "1"
+
+[dependencies.sqlx]
+version = "0.5.1"
+default-features = false
+features = [
+    "runtime-actix-rustls",
+    "macros",
+    "postgres",
+    "uuid",
+    "chrono",
+    "migrate"
+]
