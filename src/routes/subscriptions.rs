@@ -1,12 +1,32 @@
 use actix_web::{HttpResponse, web};
 use chrono::Utc;
 use sqlx::PgPool;
+use tracing_futures::Instrument;
 use uuid::Uuid;
 
 pub async fn subscribe(
   form: web::Form<FormData>,
   pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, HttpResponse> {
+  let correlation_id = Uuid::new_v4();
+
+  let request_span = tracing::info_span!(
+    "Adding a new subscriber",
+    %correlation_id,
+    email = %form.email,
+    name = %form.name
+  );
+
+  let _request_span_guard = request_span.enter();
+
+  tracing::info!(
+    "correlation_id: {}. Adding '{}' '{}' as a new subscriber.",
+    correlation_id,
+    form.email,
+    form.name
+  );
+
+  let query_span = tracing::info_span!("Saving new subscriber details in the database.");
   sqlx::query!(
     r#"
     INSERT INTO subscriptions (id, email, name, subscribed_at)
@@ -24,9 +44,10 @@ pub async fn subscribe(
     // We could have avoided the double Arc wrapping using .app_data()
     // instead of .data() in src/startup.rs - we'll get to it later!
     .execute(pool.get_ref())
+    .instrument(query_span)
     .await
-    .map_err(|e| {
-      eprintln!("Failed to execute query: {}", e);
+    .map_err(|error| {
+      tracing::error!("correlation_id: {}. Failed to execute query: {:?}", correlation_id, error);
       HttpResponse::InternalServerError().finish()
     })?;
 
