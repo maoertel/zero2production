@@ -19,7 +19,7 @@ async fn main() -> std::io::Result<()> {
     .await
     .expect("Failed to connect ot Postgres.");
 
-  let subscriber = get_subscriber("zero2prod".into(), "info".into());
+  let subscriber = get_subscriber("zero2prod".into(), "info".into(), std::io::stdout);
   init_subscriber(subscriber);
 
   run(listener, connection_pool)?.await

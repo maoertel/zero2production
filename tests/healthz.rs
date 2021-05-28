@@ -1,11 +1,13 @@
 use std::net::TcpListener;
 
+use once_cell::sync::Lazy;
 use sqlx::{Connection, PgConnection, PgPool};
 use sqlx::Executor;
 use uuid::Uuid;
 
 use zero2prod::config::{DatabaseSettings, get_configuration};
 use zero2prod::startup::run;
+use zero2prod::telemetry::{get_subscriber, init_subscriber};
 
 #[actix_rt::test]
 async fn health_check_works() {
@@ -27,7 +29,19 @@ pub struct TestApp {
   pub db_pool: PgPool,
 }
 
+static TRACING: Lazy<()> = Lazy::new(|| {
+  let default_filter_level = "info".to_string();
+  let subscriber_name = "test".to_string();
+
+  let sink = if std::env::var("TEST_LOG").is_ok() { std::io::stdout } else { std::io::sink };
+
+  let subscriber = get_subscriber(subscriber_name, default_filter_level, sink);
+  init_subscriber(subscriber);
+});
+
 async fn spawn_app() -> TestApp {
+  Lazy::force(&TRACING);
+
   let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to port");
   let port = listener.local_addr().unwrap().port();
   let address = format!("http://127.0.0.1:{}", port);
