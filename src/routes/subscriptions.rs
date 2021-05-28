@@ -7,7 +7,6 @@ use uuid::Uuid;
   name = "Adding a new subscriber",
   skip(form, pool),
   fields(
-    correlation_id = % Uuid::new_v4(),
     email = % form.email,
     name = % form.name
   )
